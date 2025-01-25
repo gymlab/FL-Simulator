@@ -62,6 +62,7 @@ wandb.init(project="FedWS_5_100",
            group=f'dirichlet{args.split_coef}',
            job_type=f"{args.method}_{args.split_coef}",
            dir=f'./{args.dataset}/{args.method}_{args.split_coef}')
+wandb.runname = f"{args.method}_{args.split_coef}"
 
 torch.manual_seed(args.seed)
 torch.cuda.manual_seed_all(args.seed)
