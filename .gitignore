@@ -1,0 +1,17 @@
+wandb
+*/__pycache__/
+*.pyc
+checkpoints/**
+*/.ipynb_checkpoints/
+__pycache__/
+data
+./data/
+data/
+outputs
+outputs/
+./tmp/
+tmp/
+tmp
+Data
+./Data
+./Data/

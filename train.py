@@ -6,6 +6,9 @@ from models import *
 from server import *
 from dataset import *
 
+import wandb
+wandb.require("service")
+
 #### ================= Open Float32 in A100 ================= ####
 torch.backends.cuda.matmul.allow_tf32 = True
 torch.backends.cudnn.allow_tf32 = True
@@ -53,7 +56,12 @@ parser.add_argument('--method', choices=['FedAvg', 'FedCM', 'FedDyn', 'SCAFFOLD'
                                          'FedGamma', 'FedSpeed', 'FedSMOO'], type=str, default='FedAvg')
                                          
 args = parser.parse_args()
-print(args)
+
+# wandb
+wandb.init(project="FedWS_5_100", 
+           group=f'dirichlet{args.split_coef}',
+           job_type=f"{args.method}_{args.split_coef}",
+           dir=f'./{args.dataset}/{args.method}_{args.split_coef}')
 
 torch.manual_seed(args.seed)
 torch.cuda.manual_seed_all(args.seed)

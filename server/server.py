@@ -8,7 +8,7 @@ from dataset import Dataset
 from torch.utils import data
 
 from utils import *
-
+import wandb
 
 class Server(object):
     def __init__(self, device, model_func, init_model, init_par_list, datasets, method, args):
@@ -81,20 +81,23 @@ class Server(object):
         
         
     def _test_(self, t, selected_clients):
+        dataset_name = 'CIFAR10'
         # test
         # validation on train set
         loss, acc = self._validate_((np.concatenate(self.datasets.client_x, axis=0), np.concatenate(self.datasets.client_y, axis=0)))
         self.train_perf[t] = [loss, acc]
         print("   Train    ----    Loss: {:.4f},   Accuracy: {:.4f}".format(self.train_perf[t][0], self.train_perf[t][1]), flush = True)
+        wandb_dict = {f'loss/{dataset_name}': self.train_perf[t][0]}
         # validation on test set
         loss, acc = self._validate_((self.datasets.test_x, self.datasets.test_y))
         self.test_perf[t] = [loss, acc]
         print("    Test    ----    Loss: {:.4f},   Accuracy: {:.4f}".format(self.test_perf[t][0], self.test_perf[t][1]), flush = True)
+        wandb_dict[f'acc/{dataset_name}'] = self.test_perf[t][1]
         # calculate consistency
         self._see_the_divergence_(selected_clients, t)
         print("            ----    Divergence: {:.4f}".format(self.divergence[t]), flush = True)
-        
-    
+        wandb.log(wandb_dict, step=t)
+
     def _summary_(self):
         # print results summary
         print("##=============================================##")
@@ -103,8 +106,7 @@ class Server(object):
         print("     Communication round   --->   T = {:d}       ".format(self.args.comm_rounds))
         print("    Average Time / round   --->   {:.2f}s        ".format(np.mean(self.time)))
         print("     Top-1 Test Acc (T)    --->   {:.2f}% ({:d}) ".format(np.max(self.test_perf[:,1])*100., np.argmax(self.test_perf[:,1])))
-    
-    
+
     def _validate_(self, dataset):
         self.server_model.eval()
         self.loss = torch.nn.CrossEntropyLoss(reduction='mean')
