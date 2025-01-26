@@ -68,9 +68,9 @@ class Server(object):
         inc_seed = 0
         while(True):
             np.random.seed(t + self.args.seed + inc_seed)
-            act_list = np.random.uniform(size=self.args.total_client)
-            act_clients = act_list <= self.args.active_ratio
-            selected_clients = np.sort(np.where(act_clients)[0])
+            M = max(int(self.args.active_ratio * self.args.total_client), 1)
+            selected_clients = np.random.choice(range(self.args.total_client), M, replace=False)
+            selected_clients = np.sort(selected_clients)
             inc_seed += 1
             if len(selected_clients) != 0:
                 return selected_clients
