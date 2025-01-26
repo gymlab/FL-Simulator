@@ -21,7 +21,7 @@ print("##     Federated Learning Simulator Starts     ##")
 print("##=============================================##")
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--dataset', choices=['CIFAR10', 'CIFAR100'], type=str, default='CIFAR10')             # select dataset
+parser.add_argument('--dataset', choices=['CIFAR10', 'CIFAR100', 'tinyimagenet'], type=str, default='CIFAR10')             # select dataset
 parser.add_argument('--model', choices=['LeNet', 'ResNet18'], type=str, default='ResNet18')                # select model
 parser.add_argument('--non-iid', action='store_true', default=False)                                       # activate if use heterogeneous dataset 
 parser.add_argument('--split-rule', choices=['Dirichlet', 'Pathological'], type=str, default='Dirichlet')  # select the dataset splitting rule
@@ -91,6 +91,8 @@ if __name__=='__main__':
         classes = 10
     elif args.dataset == 'CIFAR100':
         classes = 100
+    elif args.dataset == 'tinyimagenet':
+        classes = 200
     else:
         raise NotImplementedError('not implemented dataset yet')
 

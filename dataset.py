@@ -7,6 +7,7 @@ import torch.nn as nn
 from torch.utils import data
 import torch.nn.functional as F
 import torchvision.transforms as transforms
+from PIL import Image
 
 class DatasetObject:
     def __init__(self, dataset, n_client, seed, rule, unbalanced_sgm=0, rule_arg='', data_path=''):
@@ -39,13 +40,20 @@ class DatasetObject:
                 self.channels = 1; self.width = 28; self.height = 28; self.n_cls = 10;
             
             if self.dataset == 'CIFAR10':
-                transform = transforms.Compose([transforms.ToTensor(),
-                                                transforms.Normalize(mean=[0.491, 0.482, 0.447], std=[0.247, 0.243, 0.262])])
+
+                transform_train = transforms.Compose([transforms.RandomRotation(10),
+                                                      transforms.RandomCrop(32, padding=4),
+                                                      transforms.RandomHorizontalFlip(),
+                                                      transforms.ToTensor(),
+                                                      transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])])
+                transform_test = transforms.Compose([transforms.CenterCrop(32),
+                                                     transforms.ToTensor(),
+                                                     transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])])
 
                 trainset = torchvision.datasets.CIFAR10(root='%sData/Raw' %self.data_path,
-                                                      train=True , download=True, transform=transform)
+                                                      train=True , download=True, transform=transform_train)
                 testset = torchvision.datasets.CIFAR10(root='%sData/Raw' %self.data_path,
-                                                      train=False, download=True, transform=transform)
+                                                      train=False, download=True, transform=transform_test)
                 
                 train_load = torch.utils.data.DataLoader(trainset, batch_size=50000, shuffle=False, num_workers=0)
                 test_load = torch.utils.data.DataLoader(testset, batch_size=10000, shuffle=False, num_workers=0)
@@ -53,48 +61,66 @@ class DatasetObject:
                 
             if self.dataset == 'CIFAR100':
                 print(self.dataset)
-                transform = transforms.Compose([transforms.ToTensor(),
-                                                transforms.Normalize(mean=[0.5071, 0.4867, 0.4408], 
-                                                                     std=[0.2675, 0.2565, 0.2761])])
+                transform_train = transforms.Compose([transforms.RandomRotation(10),
+                                                      transforms.RandomCrop(32, padding=4),
+                                                      transforms.RandomHorizontalFlip(),
+                                                      transforms.ToTensor(),
+                                                      transforms.Normalize(mean=[0.5071, 0.4867, 0.4408], std=[0.2675,0.2565,0.2761])])
+                transform_test = transforms.Compose([transforms.CenterCrop(32),
+                                                     transforms.ToTensor(),
+                                                     transforms.Normalize(mean=[0.5071, 0.4867, 0.4408], std=[0.2675,0.2565,0.2761])])
                 trainset = torchvision.datasets.CIFAR100(root='%sData/Raw' %self.data_path,
-                                                      train=True , download=True, transform=transform)
+                                                      train=True , download=True, transform=transform_train)
                 testset = torchvision.datasets.CIFAR100(root='%sData/Raw' %self.data_path,
-                                                      train=False, download=True, transform=transform)
+                                                      train=False, download=True, transform=transform_test)
                 train_load = torch.utils.data.DataLoader(trainset, batch_size=50000, shuffle=False, num_workers=0)
                 test_load = torch.utils.data.DataLoader(testset, batch_size=10000, shuffle=False, num_workers=0)
                 self.channels = 3; self.width = 32; self.height = 32; self.n_cls = 100;
             
             if self.dataset == 'tinyimagenet':
                 print(self.dataset)
-                transform = transforms.Compose([# transforms.Resize(224),
-                                                transforms.ToTensor(),
-                                                # transforms.Normalize(mean=[0.485, 0.456, 0.406], #pre-train
-                                                #                      std=[0.229, 0.224, 0.225])])
-                                                transforms.Normalize(mean=[0.5, 0.5, 0.5], 
-                                                                     std=[0.5, 0.5, 0.5])])
+                transform_train = transforms.Compose([transforms.RandomRotation(10),
+                                                      transforms.RandomCrop(64, padding=4),
+                                                      transforms.RandomHorizontalFlip(),
+                                                      transforms.ToTensor(),
+                                                      transforms.Normalize(mean=[0.4802,0.4481,0.3975], std=[0.2770,0.2691,0.2821])])
+                transform_test = transforms.Compose([transforms.CenterCrop(64),
+                                                     transforms.ToTensor(),
+                                                     transforms.Normalize(mean=[0.4802,0.4481,0.3975], std=[0.2770,0.2691,0.2821])])
                 # trainset = torchvision.datasets.ImageFolder(root='%sData/Raw' %self.data_path,
                 #                                       train=True , download=True, transform=transform)
                 # testset = torchvision.datasets.ImageFolder(root='%sData/Raw' %self.data_path,
                 #                                       train=False, download=True, transform=transform)
                 # root_dir = self.data_path
-                root_dir = "./Data/Raw/tiny-imagenet-200/"
+                root_dir = "./Data/Raw/tiny_imagenet/"
+                train_path = os.path.join(root_dir, 'train')
+                val_path = os.path.join(root_dir, 'val')
+                wnids_path = os.path.join(root_dir, 'wnids.txt')
+                
+                with open(wnids_path, 'r') as f:
+                    wnids = [line.strip() for line in f]
+                class_to_idx = {cls_name: idx for idx, cls_name in enumerate(wnids)}
+
                 trn_img_list, trn_lbl_list, tst_img_list, tst_lbl_list = [], [], [], []
-                trn_file = os.path.join(root_dir, 'train_list.txt')
-                tst_file = os.path.join(root_dir, 'val_list.txt')
-                with open(trn_file) as f:
-                    line_list = f.readlines()
-                    for line in line_list:
-                        img, lbl = line.strip().split()
-                        trn_img_list.append(img)
-                        trn_lbl_list.append(int(lbl))
-                with open(tst_file) as f:
-                    line_list = f.readlines()
-                    for line in line_list:
-                        img, lbl = line.strip().split()
-                        tst_img_list.append(img)
-                        tst_lbl_list.append(int(lbl))
-                trainset = DatasetFromDir(img_root=root_dir, img_list=trn_img_list, label_list=trn_lbl_list, transformer=transform)
-                testset = DatasetFromDir(img_root=root_dir, img_list=tst_img_list, label_list=tst_lbl_list, transformer=transform)
+                for class_name in os.listdir(train_path):
+                    class_dir = os.path.join(train_path, class_name, 'images')
+                    if os.path.isdir(class_dir):
+                        for img_file in os.listdir(class_dir):
+                            img_path = os.path.join(class_dir, img_file)
+                            trn_img_list.append(img_path)
+                            trn_lbl_list.append(class_to_idx[class_name])
+                
+                # Validation set processing
+                val_annotations = os.path.join(val_path, 'val_annotations.txt')
+                with open(val_annotations, 'r') as f:
+                    for line in f:
+                        img_name, class_name, *_ = line.split()
+                        img_path = os.path.join(val_path, 'images', img_name)
+                        tst_img_list.append(img_path)
+                        tst_lbl_list.append(class_to_idx[class_name])
+
+                trainset = DatasetFromDir(img_root=root_dir, img_list=trn_img_list, label_list=trn_lbl_list, transformer=transform_train)
+                testset = DatasetFromDir(img_root=root_dir, img_list=tst_img_list, label_list=tst_lbl_list, transformer=transform_test)
                 train_load = torch.utils.data.DataLoader(trainset, batch_size=len(trainset), shuffle=False, num_workers=0)
                 test_load = torch.utils.data.DataLoader(testset, batch_size=len(testset), shuffle=False, num_workers=0)
                 self.channels = 3; self.width = 64; self.height = 64; self.n_cls = 200;
@@ -464,7 +490,8 @@ class DatasetFromDir(data.Dataset):
     def __getitem__(self, index):
         img_name = self.img_list[index % self.size]
         # ********************
-        img_path = os.path.join(self.root_dir, img_name)
+        img_path = os.path.join(img_name)
+        # img_path = os.path.join(self.root_dir, img_name)
         img_id = self.label_list[index % self.size]
 
         img_raw = Image.open(img_path).convert('RGB')
