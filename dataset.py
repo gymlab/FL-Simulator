@@ -41,13 +41,9 @@ class DatasetObject:
             
             if self.dataset == 'CIFAR10':
 
-                transform_train = transforms.Compose([transforms.RandomRotation(10),
-                                                      transforms.RandomCrop(32, padding=4),
-                                                      transforms.RandomHorizontalFlip(),
-                                                      transforms.ToTensor(),
+                transform_train = transforms.Compose([transforms.ToTensor(),
                                                       transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])])
-                transform_test = transforms.Compose([transforms.CenterCrop(32),
-                                                     transforms.ToTensor(),
+                transform_test = transforms.Compose([transforms.ToTensor(),
                                                      transforms.Normalize(mean=[0.4914, 0.4822, 0.4465], std=[0.2023, 0.1994, 0.2010])])
 
                 trainset = torchvision.datasets.CIFAR10(root='%sData/Raw' %self.data_path,
@@ -61,13 +57,9 @@ class DatasetObject:
                 
             if self.dataset == 'CIFAR100':
                 print(self.dataset)
-                transform_train = transforms.Compose([transforms.RandomRotation(10),
-                                                      transforms.RandomCrop(32, padding=4),
-                                                      transforms.RandomHorizontalFlip(),
-                                                      transforms.ToTensor(),
+                transform_train = transforms.Compose([transforms.ToTensor(),
                                                       transforms.Normalize(mean=[0.5071, 0.4867, 0.4408], std=[0.2675,0.2565,0.2761])])
-                transform_test = transforms.Compose([transforms.CenterCrop(32),
-                                                     transforms.ToTensor(),
+                transform_test = transforms.Compose([transforms.ToTensor(),
                                                      transforms.Normalize(mean=[0.5071, 0.4867, 0.4408], std=[0.2675,0.2565,0.2761])])
                 trainset = torchvision.datasets.CIFAR100(root='%sData/Raw' %self.data_path,
                                                       train=True , download=True, transform=transform_train)
@@ -79,13 +71,9 @@ class DatasetObject:
             
             if self.dataset == 'tinyimagenet':
                 print(self.dataset)
-                transform_train = transforms.Compose([transforms.RandomRotation(10),
-                                                      transforms.RandomCrop(64, padding=4),
-                                                      transforms.RandomHorizontalFlip(),
-                                                      transforms.ToTensor(),
+                transform_train = transforms.Compose([transforms.ToTensor(),
                                                       transforms.Normalize(mean=[0.4802,0.4481,0.3975], std=[0.2770,0.2691,0.2821])])
-                transform_test = transforms.Compose([transforms.CenterCrop(64),
-                                                     transforms.ToTensor(),
+                transform_test = transforms.Compose([transforms.ToTensor(),
                                                      transforms.Normalize(mean=[0.4802,0.4481,0.3975], std=[0.2770,0.2691,0.2821])])
                 # trainset = torchvision.datasets.ImageFolder(root='%sData/Raw' %self.data_path,
                 #                                       train=True , download=True, transform=transform)
@@ -301,7 +289,7 @@ class DatasetObject:
             
             # Save data
             print('begin to save data...')
-            os.mkdir('%sData/%s' %(self.data_path, self.name))
+            os.mkdir('%sData/%s' %(self.data_path, self.name), exist_ok=True)
             
             np.save('%sData/%s/client_x.npy' %(self.data_path, self.name), client_x)
             np.save('%sData/%s/client_y.npy' %(self.data_path, self.name), client_y)
