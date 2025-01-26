@@ -81,18 +81,17 @@ class Server(object):
         
         
     def _test_(self, t, selected_clients):
-        dataset_name = 'CIFAR100'
         # test
         # validation on train set
         loss, acc = self._validate_((np.concatenate(self.datasets.client_x, axis=0), np.concatenate(self.datasets.client_y, axis=0)))
         self.train_perf[t] = [loss, acc]
         print("   Train    ----    Loss: {:.4f},   Accuracy: {:.4f}".format(self.train_perf[t][0], self.train_perf[t][1]), flush = True)
-        wandb_dict = {f'loss/{dataset_name}': self.train_perf[t][0]}
+        wandb_dict = {f'loss/{self.args.dataset}': self.train_perf[t][0]}
         # validation on test set
         loss, acc = self._validate_((self.datasets.test_x, self.datasets.test_y))
         self.test_perf[t] = [loss, acc]
         print("    Test    ----    Loss: {:.4f},   Accuracy: {:.4f}".format(self.test_perf[t][0], self.test_perf[t][1]), flush = True)
-        wandb_dict[f'acc/{dataset_name}'] = self.test_perf[t][1] * 100
+        wandb_dict[f'acc/{self.args.dataset}'] = self.test_perf[t][1] * 100
         # calculate consistency
         self._see_the_divergence_(selected_clients, t)
         print("            ----    Divergence: {:.4f}".format(self.divergence[t]), flush = True)
