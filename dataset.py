@@ -289,7 +289,7 @@ class DatasetObject:
             
             # Save data
             print('begin to save data...')
-            os.mkdir('%sData/%s' %(self.data_path, self.name), exist_ok=True)
+            os.makedirs('%sData/%s' %(self.data_path, self.name), exist_ok=True)
             
             np.save('%sData/%s/client_x.npy' %(self.data_path, self.name), client_x)
             np.save('%sData/%s/client_y.npy' %(self.data_path, self.name), client_y)

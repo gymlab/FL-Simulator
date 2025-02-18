@@ -51,6 +51,7 @@ parser.add_argument('--lamb', default=0.1, type=float)                          
 parser.add_argument('--rho', default=0.1, type=float)                                                      # select the SAM perturbation rate
 parser.add_argument('--gamma', default=1.0, type=float)                                                    # select the coefficient for the correction of SAM
 parser.add_argument('--epsilon', default=0.01, type=float)                                                 # select the minimal value for avoiding zero-division
+parser.add_argument('--project', default='dev_quant3', type=str) 
 
 parser.add_argument('--method', choices=['FedAvg', 'FedCM', 'FedDyn', 'SCAFFOLD', 'FedAdam', 'FedProx', 'FedSAM', 'MoFedSAM', \
                                          'FedGamma', 'FedSpeed', 'FedSMOO'], type=str, default='FedAvg')
@@ -58,11 +59,13 @@ parser.add_argument('--method', choices=['FedAvg', 'FedCM', 'FedDyn', 'SCAFFOLD'
 args = parser.parse_args()
 
 # wandb
-wandb.init(project="FedWS_5_100", 
-           group=f'dirichlet{args.split_coef}',
-           job_type=f"{args.method}_{args.split_coef}",
-           dir=f'./{args.dataset}/{args.method}_{args.split_coef}')
-wandb.run.name = f"{args.method}_{args.split_coef}"
+job_type = f"{args.method}_{args.split_coef}" if args.non_iid else f"{args.method}_iid"
+group = f'dirichlet{args.split_coef}' if args.non_iid else f'iid'
+wandb.init(project=args.project, 
+           group=group,
+           job_type=job_type,
+           dir=f'./{args.dataset}/{job_type}')
+wandb.run.name = job_type
 
 torch.manual_seed(args.seed)
 torch.cuda.manual_seed_all(args.seed)
